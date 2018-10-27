@@ -1,0 +1,141 @@
+
+First, I set locale to standard C with the following command: 
+export LC_ALL='C'. 
+
+Then, we sort the file, words in /usr/share/dict and place it into a file 
+named words in my directory using the sort command:
+sort -u /usr/share/dict/words > words.
+
+We need to store the HTML in the assignment's wed page into a text file 
+and we do this using the: 
+wget https://web.cs.ucla.edu/classes/spring18/cs35L/assign/assign2.html 
+command. We now have the HTML of the web page in a text file named 
+assign2.html in the working directory.
+
+We run 6 tr commands with the above assign2.html file as the standard 
+input. The description of what they do and their output is below.
+
+tr -c 'A-Za-z' '[\n*]' < assign2.html
+
+This outputs all the words that only contains A-Z and a-z and a bunch 
+of new lines between the words. tr replaces all the words that contains 
+A-Z and a-z with a new line, but since we are getting the compliment of 
+that, we get the words with A-Z and a-z and have a newline for rest of 
+the characters.
+
+tr -cs 'A-Za-z' '[\n*]' < assign2.html
+
+This outputs the same thing as the previous command, but there is only 
+one new line between words. The -s option replaces any sequence of 
+repeated characters in set1 with just one newline. The entire sequence 
+is replaced with a newline instead of multiple newlines like before.
+
+tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort
+
+This outputs the same thing as the previous command, but the resulting 
+words are sorted. The sort command after the tr command sorts the resulting 
+words, which is why we get this result.
+
+tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort -u
+
+This outputs the same thing as the previous command, but the resulting 
+words are sorted and each word only appears once. The sort command has 
+the -u option, which sorts the words but does not allow duplicate records.
+
+
+tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort -u | comm - words
+
+This outputs three columns. The first column lists everything unique to 
+assign2.html. The second column lists everything unique to words. The third 
+column lists everything that are in both. The comm - words commands compares 
+the result of the previous command (the output from the previous command) 
+to the words file and outputs them into 3 columns. 
+
+tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort -u | comm -23 - words
+
+This outputs just the first column from the previous output. The -23 option 
+to the comm command remolds the 2nd and 3rd column from the output.
+
+Next, we make the simple Hawaiian dictionary. We first get the the dictionary 
+by running wget http://mauimapp.com/moolelo/hwnwdseng.htm to get the html 
+of the simple dictionary web page. 
+
+We create a shell script to parse the html to create a Hawaiian dictionary. 
+The script is pasted below.
+
+#!/bin/bash
+
+#get all the words between <td> and <\td> which includes all the 
+Hawaiian and English words
+grep '<td>.\{1,\}<\/td>' |
+
+#remove every other line, which removes all the English words
+sed -n '1~2!p' |
+
+#replace all the uppercase letter with their lowercase letters and 
+replace ` with '
+tr "A-Z\`" "a-z\'" | 
+
+#delete html tags, in this case <td>, <u>, </td>, and </u>
+sed 's/\(<td>\|<u>\|<\/u>\|<\/td>\)//g' |
+
+#remove all spaces before words
+sed -e 's/^[ \t]*//' |
+
+#replace spaces and , with a newline
+tr -s ', ' '[\n*]' |
+
+#replace any non Hawaiian letter with a newline
+tr -cs "pk\'mnwlhaeiou" '[\n*]' |
+
+#sort the final list of words
+sort -u
+
+
+We run the cat hwnwdseng.htm | ./buildwords > hwords to create 
+the Hawaiian dictionary. We run: 
+tr 'PKMNWLHAEIOU' 'pkmnwlhaeiou' < assign2.html to make all 
+the Hawaiian letters lower case so it matches our dictionary. Then we run: 
+tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort -u | comm -23 - hwords 
+command to output all the misspelled words relative to the Hawaiian dictionary.
+
+cat assign2.html | tr -cs "pk\'mnwlhaeiou" '[\n*]' | tr '[:upper:]' '[:lower:]'
+ | sort -u | comm -23 - hwords | wc -l command list the number of misspelled 
+ words in Hawaiian, which is 198.
+
+cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | tr '[:upper:]' '[:lower:]' 
+| sort -u | comm -23 - words | wc -l command lists the number of misspelled 
+words in English, which is 39.
+
+We store the previous misspelled words in eng for misspelled English words 
+and haw for misspelled Hawaiian words. 
+
+We run the following command to get list of words that are misspelled in 
+English, but not in Hawaiian: 
+cat eng | tr -cs "pk\'mnwlhaeiou" '[\n*]' | sort -u | comm -12 - hwords. 
+In total, there are 6 such words.
+
+Some examples are: 
+halau
+po
+wiki
+
+We run the following command to get list of words that are 
+misspelled in Hawaiian, but not in English: 
+cat haw | tr -cs 'A-Za-z' '[\n*]' | sort -u | comm -12 - words.
+ In total, there are 109 such words.
+
+Some examples are: 
+om
+on
+one
+op
+ope
+open
+owe
+own
+p
+pe
+pell
+people
+plea

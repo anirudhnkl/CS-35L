@@ -1,0 +1,29 @@
+Name: Anirudh Balasubramaniam
+UID: 004906517
+
+1.
+
+I downloaded the Coreutils 8.29 source code, its signature, and its GNU keyring and moved it to a directory, using the wget command. In the directory, there are 3 files now: coreutils-8.29.tar.xz, coreutils-8.29.tar.xz.sig, and gnu-keyring.gpg. 
+
+Now, I can verify the signature of Coreutils source code by running the following command: gpg --verify --keyring ./gnu-keyring.gpg coreutils-8.29.tar.xz.sig. The verification returns a warning that the key is not certified with a trusted signature. This means that they key I signed with is notary own key, but it does not speak to the safety of the packet so it is not a worry.
+
+2.
+
+I unzipped the package with tar -xvf coreutils-8.29.tar.xz , without the -z because the file is a .xz not a .gz. I configured the make file to ensure that it installs in a directory that I made, coreutilsIntsall using the following command: ./configure --prefix=/u/cs/ugrad/balasubr/cs35l/3/inst. Then, I compiled it with the make command and installed it with the make install command.
+
+3.
+
+To reproduce the bug, I made a shell script la with the same code as the one on the assignment, but I used ./ls instead of ls so the ls in the coreutils is used. Then I ran it with ./la -A.
+
+4.
+
+I applied the patch by creating a patch_file and applying it. I cd into coreutils-8.29 directory and then pasted contents of the patch file into a new file created with the emacs patch_file command. And then I ran patch -p1 < patch_file to apply the patch. Then I recompiled it with the make command.
+
+5.
+
+GEN command is run many times and it is used to create documentation for the given files.
+CC and LD command is also run and these commands are used to compile and link ls and its dependencies, relatively.
+
+6.
+
+Now, I tested the modified and installed ls command to see if the patch fixed the bug. I tested the commands on a file that I just made and on a file that is one year old. The modified ls is in the directory /u/cs/ugrad/balasubr/cs35l/3/inst and the installed ls command is in another directory /u/cs/ugrad/balasubr/cs35l/3/new. I had the la script file as described in the assignment.

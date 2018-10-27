@@ -1,0 +1,157 @@
+Name: Anirudh Balasubramaniam
+UID: 004906517
+
+We first wrote the C program to do the transliteration using both buffered 
+and unbuffered methods. Then we tested them with a small text file that
+We created using the following code.
+
+    #include <stdio.h>
+
+    int main(int argc, const char * argv[])
+    {
+        for(int i = 0; i < 10000; i++)
+        {
+            int num = (rand() % (6)) + 65;
+            int ul = (rand() % (2));
+            putchar(num + 32*ul);
+        }
+        return 0;
+    }
+
+    gcc -std=c11 writer.c -o writer
+    ./writer >testmsl
+
+We compiled the two C programs and tested it. We checked after each time running 
+the file if the letters changed as they should.
+
+    gcc -std=c11 tr2b.c -o tr2b
+    gcc -std=c11 tr2u.c -o tr2u
+
+    ./tr2u "ABCDEF" "ZXCVBN" <testsml >outsml
+    cat outsml
+
+    ./tr2b "abcdef" "qwerty" <testsml >outsml
+    cat outsml
+
+Then, we editted the writer program to create a big file with 500000 bytes.
+
+    #include <stdio.h>
+
+    int main(int argc, const char * argv[])
+    {
+        for(int i = 0; i < 500000; i++)
+        {
+            putchar('a');
+        }
+        return 0;
+    }
+
+    gcc -std=c11 writer.c -o writer
+    ./writer >test
+
+Now, we used the strace to compare the system calls issued by my programs.
+
+a) Copying to another file
+
+    strace -c ./tr2b 'a' 'g' < test > outb
+
+    % time     seconds  usecs/call     calls    errors syscall
+    ------ ----------- ----------- --------- --------- ---------------- 
+    59.35    0.000454           1       611           write 
+    35.03    0.000268           0       613           read  
+    1.83    0.000014           4         4           mprotect  
+    1.44    0.000011          11         1           munmap  
+    1.31    0.000010           3         4           fstat  
+    1.05    0.000008           1         9           mmap  
+    0.00    0.000000           0         2           open  
+    0.00    0.000000           0         2           close
+    0.00    0.000000           0         1           brk
+    0.00    0.000000           0         1         1 access
+    0.00    0.000000           0         1           execve
+    0.00    0.000000           0         1           arch_prctl
+    ------ ----------- ----------- --------- --------- ----------------
+    100.00    0.000765                  1250         1 total
+
+    strace -c ./tr2u 'a' 'v' < test > asdf
+
+    % time     seconds  usecs/call     calls    errors syscall
+    ------ ----------- ----------- --------- --------- ---------------- 
+    56.32   20.282970           4   5000001           write 
+    43.68   15.732735           3   5000002           read  
+    0.00    0.000310         103         3           fstat  
+    0.00    0.000058           7         8           mmap  
+    0.00    0.000043          43         1           brk  
+    0.00    0.000043          43         1           execve  
+    0.00    0.000029          15         2           open  
+    0.00    0.000026           7         4           mprotect  
+    0.00    0.000013          13         1         1 access  
+    0.00    0.000010          10         1           munmap  
+    0.00    0.000006           3         2           close  
+    0.00    0.000003           3         1           arch_prctl
+    ------ ----------- ----------- --------- --------- ----------------
+    100.00   36.016246              10000027         1 total
+
+We noticed that the buffered version had a lot fewer system class than the
+unbuffered version. 
+
+b) Copying to terminal
+
+    strace -c ./tr2b 'a' 'g' < test
+    time     seconds  usecs/call     calls    errors syscall
+    ------ ----------- ----------- --------- --------- ----------------
+    91.17   0.008779           2      4883           write
+    7.09    0.000683           1       613           read
+    0.54    0.000052           6         9           mmap
+    0.29    0.000028           7         4           mprotect
+    0.21    0.000020          10         2           open
+    0.17    0.000016           4         4           fstat
+    0.15    0.000014          14         1         1 access
+    0.12    0.000012          12         1           brk
+    0.10    0.000010          10         1           munmap
+    0.06    0.000006           3         2           close
+    0.06    0.000006           6         1           execve
+    0.03    0.000003           3         1           arch_prctl
+    ------ ----------- ----------- --------- --------- ----------------
+    100.00    0.009629                  5522         1 total
+
+    strace -c ./tr2u 'a' 'g' < test
+
+    % time     seconds  usecs/call     calls    errors syscall
+    ------ ----------- ----------- --------- --------- ----------------
+    57.34   22.669131           5   5000001           write
+    42.66   16.863448           3   5000002           read
+    0.00    0.000006           1         8           mmap
+    0.00    0.000004           1         3           fstat
+    0.00    0.000000           0         2           open
+    0.00    0.000000           0         2           close
+    0.00    0.000000           0         4           mprotect
+    0.00    0.000000           0         1           munmap
+    0.00    0.000000           0         1           brk
+    0.00    0.000000           0         1         1 access
+    0.00    0.000000           0         1           execve
+    0.00    0.000000           0         1           arch_prctl
+    ------ ----------- ----------- --------- --------- ----------------
+    100.00   39.532589              10000027         1 total
+
+Once again, the unbuffered version had a lot more system calls, but the 
+buffered version this time had more system class than last mine,
+while the unbuffered version has the same number.
+
+Now, we used the time command to measure how much faster one
+program was compared to the other.
+
+    time ./tr2b 'a' 'v' < test > outb
+
+    real    0m0.412s
+    user    0m0.257s
+    sys     0m0.035s
+
+    time ./tr2u 'a' 'v' < test > outu
+
+    real    0m9.710s
+    user    0m1.356s
+    sys     0m8.309s
+
+Given this data, we can definitely say that the buffered versions are much
+faster than the unbuffered versions. More specifically, putchar and getchar
+are much faster than write and read.

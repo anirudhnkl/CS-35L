@@ -1,0 +1,12 @@
+Anirudh Balasubramaniam
+004906517
+
+The window is divided into halves horizontally. The top half is divided into 3 columns. The first has a branching tree structure of commits
+and their relationship with the branches. The second column has the name and email of the author of the commit shown in the first column.
+The third column shows the date of the commit show in the first column. 
+
+The separating bar in the middle has the SHA1 ID fo the selected commit and the row number.
+
+The bottom half is separated into two columns. The first shows the changelog of the commits and the diff of the commit for the modified files.
+The second column has the names of the modified files in the commit.
+

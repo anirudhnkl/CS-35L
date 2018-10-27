@@ -1,0 +1,107 @@
+Name: Anirudh Balasubramaniam
+UID: 004906517
+
+We downloaded the old stable version of coreutils using the wget command and expanded the file using the tar command. 
+
+    wget https://web.cs.ucla.edu/classes/spring18/cs35L/assign/coreutils-with-bug.tar.gz
+
+    tar -zxvf coreutils-with-bug.tar.gz
+
+Then, we tried to install it with the ./configure and make commands. But the make command resulted in an error:
+
+    In file included from utimecmp.c:41:0:
+    utimens.h:2:5: error: conflicting types for 'futimens'
+    int futimens (int, char const *, struct timespec const [2]);
+        ^
+    In file included from utimecmp.h:25:0,
+                    from utimecmp.c:25:
+    /usr/include/sys/stat.h:373:12: note: previous declaration of 'futimens' was here
+    extern int futimens (int __fd, const struct timespec __times[2]) __THROW;
+
+To fix this error, we used the renaming patch given in the assignment. We downloaded the patch, applied it, and ran the make command again. There were no errors produced by the make command, as the patch fixed them. Then, installed it in a separate directory.
+
+    wget https://web.cs.ucla.edu/classes/spring18/cs35L/assign/cor dup-safer.o -eutils.diff
+
+    patch -p0 < coreutils.diff
+
+    make
+    make install
+
+Q) What problems did you have when building it as-is, and why did the renaming patch fix them?
+
+    The code has errors, as shown above, due to having two functions with the name futimens. But the patch fixes this by renaming the function with three parameters to coreutils_futimens. Since the name of the function and all the calls to it have been changed, the error is no longer present.
+
+Now, we tried to reproduce the bug with ls -t. We created a temporary directory with three files with different dates. Running the ls -t command results in a bug and not what we would expect.
+
+    tmp=$(mktemp -d)
+    cd $tmp
+    touch -d '1918-11-11 11:00 GMT' wwi-armistice
+    touch now
+    sleep 1
+    touch now1
+    ~/cs35l/4/install/ls -lt --full-time wwi-armistice now now1
+
+The wwi-armistice file should be last, but it is the first in the list. To figure out why we get this bug, we can use gdb and find why the code breaks. We use info functions to see all the functions in the code. We see some relevant fuctions, especially compare_atime, compare_ctime,compare_mtime. Looking further into these names, mtime seems more relevant so we set a break point on it and step through it. 
+
+    gdb ~/cs35l/4/install/ls
+    info functions
+    b compare_mtime
+    run -lt --full-time wwi-armistice now now1
+    stepi
+
+We saw that the code breaks at compare_mtime and as we stepped in, that there is a function called cmp_mtime that is called. This function caulculates the difference between two times. The code for the function is:
+
+    static inline int
+    timespec_cmp (struct timespec a, struct timespec b)
+    {
+        int diff = a.tv_sec - b.tv_sec;
+        return diff ? diff : a.tv_nsec - b.tv_nsec;
+    }
+
+We can solve this by returning -1, 0, or 1 instead of the subtraction. So the code would now look like:
+
+    static inline int
+    timespec_cmp (struct timespec a, struct timespec b)
+    {
+        if(a.tv_sec == b.tv_sec)
+            return 0;
+        else if(a.tv_sec > b.tv_sec)
+            return 1;
+        else
+            return -1;
+    }
+
+We put this into a diff file so we can apply it as a patch. We can move the file to the lib directory. We applied the patch and then tried the ls command again to see if it worked.
+
+    diff -u coreutils-with-bug/lib/timespec.h timespec.h > patch.diff
+    mv patch.diff coreutils-with-bug/lib
+    patch -p0 < patch.diff
+    make
+    make install
+
+    cd $tmp
+    ~/cs35l/4/install/bin/ls -lt --full-time wwi-armistice now now1
+
+    -rw-r--r-- 1 balasubr csugrad 0 2018-05-07 12:23:27.750857899 -0700 now1
+    -rw-r--r-- 1 balasubr csugrad 0 2018-05-07 12:23:22.022761341 -0700 now
+    -rw-r--r-- 1 balasubr csugrad 0 1918-11-11 03:00:00.000000000 -0800 wwi-armistice
+
+We got the correct order for the files and can confirm that the patch fixed the bug in the code.
+
+Now, we tried running the same code on a folder in the home directory. We got the year for the first file to be in 2054. 
+
+    cd cs35l/4
+    mkdir m
+    touch -d '1918-11-11 11:00 GMT' wwi-armistice
+    touch now
+    sleep 1
+    touch now1
+    ls -lt wwi-armistice now now1
+    -rw-r--r-- 1 balasubr csugrad 0 2054-12-17 09:28 wwi-armistice
+    -rw-r--r-- 1 balasubr csugrad 0 2018-05-07 12:26 now1
+    -rw-r--r-- 1 balasubr csugrad 0 2018-05-07 12:26 now
+
+Q) When running the above test case, use the already-installed touch and ls utilities instead of the old version of coreutils. How well does SEASnet do?
+
+    The SEASnet server cannot hold a value as low as 1918, because it holds time values as seconds from the UNIX epoch (Jan 1, 1970 12 am). Since 1918 is before this date, the value is wrapped to the
+    futue. In the $tmp directory, values are stored in 64 signed bits, but this is truncated to 32 bits in the SEASnet server. This makes the past date 1918 into a future date.

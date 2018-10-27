@@ -1,0 +1,21 @@
+Anirudh Balasubramaniam
+004906517
+
+1. The resulting network is still secure because the data sent are encrypted
+with the private key and the server's public key so the other teams have no 
+way to decrypt it. 
+
+(1) The network is still secure because even if other teams tapped out keyboards
+and found out the passphrase, the generated private key will be different, thus
+not allowing them to access the data.
+
+(2) The network might still be secure. They can access the system files located on
+the USB and gain access to the keys, which can be used to access the server.
+But this is only true if the system files are located are located on the drive.
+We can also secure the private key with a password to avoid this risk.
+
+2. The gpg2 --verify command does not really verify that I personally created the 
+file in question because it only checks to see if the file and the detached signatures
+match or not. It does not check if I created the file. To solve this problem, we can
+use a third party certifier to check and make sure we have the correct public key.
+

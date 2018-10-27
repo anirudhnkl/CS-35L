@@ -1,0 +1,79 @@
+1. man -k [word]
+   I used the man man command to see the documentation for the man command to find out what command with man will list what I am looking for.
+
+2. cp is in /usr/local/cs/bin. This was found using which cp.
+   sh is in /usr/bin/sh. This was found using which sh.
+   I used which because it displays the directory for the program after it, which is what I am looking for.
+
+3. ./proj4/m  This program encrypts some text, used in CS 32. It was found using the following command: find -executable -name ? -type f. I used that command because -executable limits the found files to only executable programs, -name ? limits the found files to only one character long files, and the -type f limits the files to only non directory files.
+
+4. /etc/alternatives/emacs is actually executed. I found this using this command find /usr/bin/emacs -ls, as it lists the current file that I am pointing to.
+
+5. The version of the /usr/bin/emacs version is 24.3.1. The version of the simple emacs program is 25.3.1. Both were found using the --version command. They are different because the /usr/bin/emacs was installed as a part of the installation of the Linux system, while emacs was installed manually.
+
+6. The g+s means that new files and subdirectories will inherit the group ID of the directory or setgid and o-x means that users that are not owners of the file or are not members of the group will lose the permission to execute the file or recurse a directory tree. 
+
+7. 
+
+/usr/local/cs
+/usr/local/cs/src/automake
+/usr/local/cs/src/automake/RCS
+/usr/local/cs/src/emacs
+/usr/local/cs/src/emacs/RCS
+/usr/local/cs/src/help2man
+/usr/local/cs/src/help2man/RCS
+/usr/local/cs/src/python
+/usr/local/cs/src/python/RCS
+/usr/local/cs/share/info
+/usr/local/cs/share/man/man1
+/usr/local/cs/bin
+/usr/local/cs/automake-1.16.1
+/usr/local/cs/automake-1.16.1/share
+/usr/local/cs/automake-1.16.1/share/automake-1.16
+/usr/local/cs/automake-1.16.1/share/automake-1.16/am
+/usr/local/cs/automake-1.16.1/share/automake-1.16/Automake
+/usr/local/cs/automake-1.16.1/share/aclocal-1.16
+/usr/local/cs/automake-1.16.1/share/aclocal-1.16/internal
+/usr/local/cs/automake-1.16.1/share/doc
+/usr/local/cs/automake-1.16.1/share/doc/automake
+/usr/local/cs/automake-1.16.1/share/info
+/usr/local/cs/automake-1.16.1/share/aclocal
+/usr/local/cs/automake-1.16.1/share/man
+/usr/local/cs/automake-1.16.1/share/man/man1
+/usr/local/cs/automake-1.16.1/bin
+/usr/local/cs/help2man-1.47.6
+/usr/local/cs/help2man-1.47.6/bin
+/usr/local/cs/help2man-1.47.6/lib
+/usr/local/cs/help2man-1.47.6/lib/help2man
+/usr/local/cs/help2man-1.47.6/share
+/usr/local/cs/help2man-1.47.6/share/man
+/usr/local/cs/help2man-1.47.6/share/man/man1
+/usr/local/cs/help2man-1.47.6/share/info
+/usr/local/cs/emacs-25.3
+...
+
+
+I used find /usr/local/cs m -mtime -30 to find all the files last modified in the last less than or equal to 30 days.
+
+8. There are 271 symbolic links. I used which find to find the directory of find and then used ls -l | grep ^l | wc to find the number of links.
+
+9. The oldest file is librom1394.so.0.3.0. I found it using ls -lt.
+
+10. locale displays the settings of the environment variables that control the locale. I found this using man locale. 
+
+11. downcase-dwim, downcase-region, downcase-word. I found this using emacs command C-h a command to search for commands with downcase.
+
+12. 
+C-M-r           isearch-backward-regexp: Do incremental search backward for regular expression.
+C-M-s           isearch-forward-regexp: Do incremental search forward for regular expression.
+C-M-t           transpose-sexps: Transpose two balanced expressions
+C-M-u           backward-up-list: Move up in parenthesis structure 
+C-M-v           scroll-other-window: Scroll the next window
+
+I found this using C-h b, C-x o, and C-s C-M-r commands.
+
+13. C-g signals a 'quit' condition to stop a partially typed command during execution of Lisp code. I found this using C-h b, C-x o, C-s C-g commands.
+
+14. yank pastes the last stretch of killed text. It is bound to C-y. I found this using C-h b, C-x o, C-s yank commands.
+
+15. ls -l command prints everything in the current directory, while the dired command prints also prints the current and parent director. I used the man ls and ls -l and C-h b, C-x o, and C-s dired commands to find this.

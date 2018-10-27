@@ -1,0 +1,77 @@
+I created two C programs that sorted encryped text. One read and wrote using a buffered method, while the other used an unbuffered method. I also created a shell script that does the same
+thing as the C programs. 
+
+To test these programs, I used the following C program to create 4 files with differing sizes from 5,000 to 5,000,000 bytes and differing line sizes from 50 to 25,000.
+
+    int main(int argc, const char * argv[])
+    {
+        int sp [5] = {5, 6, 7, 8, 9};
+        int spi = 0;
+
+        for(int i = 0; i < 5000; i++)
+        {
+            int num = (rand() % (26)) + 65;
+            int ul = (rand() % (2));
+            putchar(num + 32*ul);
+            if(i % sp[spi] == 0)
+            {
+                putchar(' ');
+                spi++;
+                if(spi == 5)
+                    spi = 0;
+            }
+            if(i%200 == 0)
+                putchar('\n');
+        }
+        return 0;
+    }
+
+Using the time command, we can analyze the performances of the five files we are running: sfrob, sfrobu, sfrobs, sfrobu -f, and sfrobs -f. I used the following command on the five 
+files with the four test files I created. The time command is run on them and results are shown below. The results are organized by the program and line size.
+
+    time ./sfrobX [-f] < testX > out    
+
+    sfrob
+        25        real    0m0.005s user    0m0.000s sys     0m0.003s
+        50        real    0m0.005s user    0m0.004s sys     0m0.000s
+        500       real    0m0.027s user    0m0.023s sys     0m0.001s
+        25,000    real    0m1.892s user    0m0.794s sys     0m0.045s
+    
+    sfrobu
+        25        real    0m0.004s user    0m0.001s sys     0m0.001s
+        50        real    0m0.004s user    0m0.002s sys     0m0.001s
+        500       real    0m0.019s user    0m0.014s sys     0m0.001s
+        25,000    real    0m0.997s user    0m0.924s sys     0m0.015s
+
+    sfrobs
+        25        real    0m0.020s user    0m0.004s sys     0m0.005s
+        50        real    0m0.007s user    0m0.004s sys     0m0.004s
+        500       real    0m0.018s user    0m0.011s sys     0m0.007s
+        25,000    real    0m0.856s user    0m0.781s sys     0m0.070s
+
+    sfrobu -f
+        25        real    0m0.006s user    0m0.001s sys     0m0.003s
+        50        real    0m0.005s user    0m0.002s sys     0m0.002s
+        500       real    0m0.025s user    0m0.019s sys     0m0.003s
+        25,000    real    0m1.658s user    0m1.584s sys     0m0.016s
+
+    sfrobs -f
+        25        real    0m0.010s user    0m0.002s sys     0m0.007s
+        50        real    0m0.007s user    0m0.001s sys     0m0.007s
+        500       real    0m0.019s user    0m0.017s sys     0m0.002s
+        25,000    real    0m0.971s user    0m0.911s sys     0m0.071s
+
+
+The buffered sfrob is faster than the unbuffered sfrobu, as we would expect. The buffered getchar and putchar are optimized to read and write,
+whereas the system calls are less efficient. Overall, sfrobs is the fastest, as shell scripts are made to be efficiently run. The -f option
+slows down both sfrobu and sfrobs, which makes sense as there are additional operations being performed.
+
+I printed out the number of comparisons performed for sfrobu and we can use them to estimate the number of comparisons as a function of the number of
+input lines.
+
+    25           42,505
+    50           99,239
+    500       1,556,933
+    25,000  137,792,489
+
+The pattern is close to comparisions = 1200*n*log(n), where n is the number of lines. So we can represent this as O(nlogn).

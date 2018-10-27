@@ -1,0 +1,36 @@
+Name: Anirudh Balasubramaniam
+UID: 004906517
+
+Q1. Does the patch improve the performance of ls or make it worse? Briefly explain.
+
+The patch makes the performance of ls worse. There is an additional check added to the the file to ignore both "." and "..", which slows down the performance. We can confirm this with the time commands on various directories to see how long the commands take. And in every such case, the installed ls has better performance.
+
+Q2. If your company adopts this patched version of Coreutils instead of the default one, what else should you watch out for? Might this new version of Coreutils introduce other problems with your application?
+
+The new version of coreutils should not introduce any problems in our application as long as our code follows the POSIX.1-2008 standards. We just need to be aware of situations where we may have put the -A flag after -f and expected "." and ".." to be included as well.
+
+Q3. What happens when this script is invoked on an empty file like /dev/null, and why?
+
+When the script is invoked on an empty file, it results in an error, as the file is empty but numlines is greater than 0. The file tries to call chooseline() on an empty array, thus resulting in the index out of range error. The exact error is pasted below.
+
+Output:
+  File "./randline.py", line 70, in <module>
+    main()
+  File "./randline.py", line 64, in main
+    sys.stdout.write(generator.chooseline())
+  File "./randline.py", line 34, in chooseline
+    return random.choice(self.lines)
+  File "/usr/lib64/python2.7/random.py", line 274, in choice
+    return seq[int(self.random() * len(seq))]  # raises IndexError if seq is empty
+IndexError: list index out of range
+
+
+Q4. What happens when this script is invoked with Python 3 rather than Python 2, and why?
+
+When the script is invoked with Python 3, it results in a syntax error, as Python 3 has a deprecated automatic tuple unpacking so (errno, strerror) results in an error and must be changed to "except IOError as err:" to comply with Python 3 syntax. The exact error is pasted below.
+
+Output:
+  File "randline.py", line 65
+    except IOError as (errno, strerror):
+                      ^
+SyntaxError: invalid syntax

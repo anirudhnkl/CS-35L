@@ -1,0 +1,43 @@
+Anirudh Balasubramaniam
+004906517
+
+
+I started by setting up the BeagleBone as stated in the Piazza. I had to install a new OS of Debian to reset it. And then I enable wifi and x11,
+ssh-ed from my computer, and installed all the necessities including firefox. Then, I worked with my partner, Karthik Pullela to SSH into his BeagleBone.
+
+We checked if we had openssh with the following command.
+    dpkg --get-selections	|	grep openssh 
+
+Then, I generated public and private keys, created an account for Karthik with a directory, and then updated ownership and permission of the .ssh directory with the following commands, 
+run through a SSH session from my computer to the BeagleBone. Now, Karthik has a directory to SSH into securely.
+
+    ssh-keygen
+
+    cd /home
+    mkdir ani
+    sudo useradd -d /home/ani -m anis
+    sudo passwd ani
+
+    cd /home/ani
+    sudo mkdir .ssh
+
+    sudo chown -R ani .ssh
+    sudo chmod 700 .ssh
+
+Then on Karthik's BeagleBone, he generated the public and private keys and copied them to my BeagleBone for authetication. Then,  he added the private key to the ssh-agent
+too allow for connection.
+
+    ssh-keygen
+
+    ssh-copy-id -i ani@192.168.1.5
+    ssh-add
+
+Now, we are ready for him to SSH into my BeagleBone. He can access the directory and create files, which I can see through the terminal on my computer.
+
+    ssh ani@192.168.1.5
+    echo "hello" > hi.txt
+
+    ssh -X ani@192.168.1.5
+    firefox
+
+Now, he can securely connect to my BeagleBone.

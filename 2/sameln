@@ -1,0 +1,38 @@
+#!/bin/bash
+
+dir=$1
+export LC_ALL=C
+IFS=$'\n'
+FILES=$(ls -a "$dir" | sort)
+declare -a PROPFILES
+(( i=0 ))
+
+
+for FILE in $FILES
+    do
+        if [ ! -r "$dir/$FILE" ]
+        then
+            echo "Cannot read file"
+        elif [ -f "$dir/$FILE" ] && [ ! -L "$dir/$FILE" ]
+        then
+            PROPFILES[$i]="$dir/$FILE"
+            #echo "$FILE"
+            (( i=i+1 ))
+        fi
+    done
+
+for FILE1 in "${PROPFILES[@]}"
+do
+    for FILE2 in "${PROPFILES[@]}"
+    do
+        if [ "$FILE1" != "$FILE2" ] &&
+           [ $(stat -c '%i' "$FILE1") != $(stat -c '%i' "$FILE2") ]
+        then
+            if cmp -s "$FILE1" "$FILE2"
+            then
+                rm "$FILE2"
+                ln "$FILE1" "$FILE2"
+            fi
+        fi
+    done
+done

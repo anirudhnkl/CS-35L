@@ -1,0 +1,25 @@
+#!/bin/bash
+
+#get all the words between <td> and <\td> which includes all the Hawaiian and English words
+grep '<td>.\{1,\}<\/td>' |
+
+#remove every other line, which removes all the English words
+sed -n '1~2!p' |
+
+#replace all the uppercase letter with their lowercase letters and replace ` with '
+tr "A-Z\`" "a-z\'" | 
+
+#delete html tags, in this case <td>, <u>, </td>, and </u>
+sed 's/\(<td>\|<u>\|<\/u>\|<\/td>\)//g' |
+
+#remove all spaces before words
+sed -e 's/^[ \t]*//' |
+
+#replace spaces and , with a newline
+tr -s ', ' '[\n*]' |
+
+#replace any non Hawaiian letter with a newline
+tr -cs "pk\'mnwlhaeiou" '[\n*]' |
+
+#sort the final list of words
+sort -u

@@ -1,0 +1,45 @@
+Name: Anirudh Balasubramaniam
+UID:  004906517
+
+GNU sort supports the parallel option only starting with version 8.6, so we first run the following command:
+    sort --version 
+to ensure our version is new enough. The linux server was running version 8.22,
+which is sufficient for our needs.
+
+Next, we needed to generate a file containing 10,000,000 random single-precision floating 
+point numbers with a new line separating them. We can do this with the od and tr commands
+and store it in a file called out.
+
+    cat /dev/urandom | od -f -An -N 10000000 | tr -s ' ' '\n' > out
+
+Finally, we can use the time -p command on various sort commands to analyze their performances. We ran the time -p command with sort -g with no parallel option and parallel 
+option with 1, 2, 4, and 8 threads. The results are listed below.
+
+    time -p sort -g < out > /dev/null
+        real 4.73
+        user 25.46
+        sys 0.13
+
+    time -p sort -g --parallel=1 < out > /dev/null
+        real 23.08
+        user 23.03
+        sys 0.04
+
+    time -p sort -g --parallel=2 < out > /dev/null
+        real 12.21
+        user 23.13
+        sys 0.06
+
+    time -p sort -g --parallel=4 < out > /dev/null
+        real 7.14
+        user 23.71
+        sys 0.09
+
+    time -p sort -g --parallel=8 < out > /dev/null
+        real 4.70
+        user 25.33
+        sys 0.13
+
+For the no parallel option, the user time is longer than the real time, so it must be running it
+using multiple threads. The time running with 1 thread bolsters this, as it is longer.
+Then, as we increase the number of threads, the time gets shorter and shorter. 
